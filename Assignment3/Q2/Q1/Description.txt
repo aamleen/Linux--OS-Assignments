@@ -1,0 +1,12 @@
+In Q1, we had to add some delay to the vruntime calculated by the kernel. So to do that, these were the followed steps:
+
+Firstly, I added one more variable named as manual_delay in sched_entity, which has a reference in task_struct(the main database of a process), located in /include/linux/sched.h. This will be used to hold the delay amount & will be added to the original vruntime. To avoid every process being delayed, I initialised this variable to 0 in core.c, so that if the process was not modified, it will have 0 additional delay.
+
+  Now the main system call. Here, I started by first finding out the task_struct of the passed pid of the required process. For this I used struct pid of the process, which I found by using find_get_pid(). 
+
+   Then using this struct pid, I found the task_struct of the required process. Once found, I changed the pass delay(in msec) to nanosecs, so that it can match vruntime unit. Then I assigned the value to the earlier defined manual_delay, using the reference of sched_entity in the found task_struct.
+  Once done, I returned back to the calling process in system call. 
+
+On the backend, for any process the vruntime is calculated/updated in update_curr in kernel/sched/fair.c . Here, I added a statement, such that the manual_delay is added to very process' vruntime after its original vruntime is calculated. If the process was not modified, it will have no effect.
+
+Thus, overall we can see in the test program that there was a delay in the child process when I used the systemcall for the same, whereas the parent process(same nice value) had no additional delay.

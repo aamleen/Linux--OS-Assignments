@@ -1,0 +1,55 @@
+--- ker2/linux-5.14.4/kernel/sys.c	2021-09-15 13:32:36.000000000 +0530
++++ build/linux-5.14.4/kernel/sys.c	2022-01-05 06:18:11.389971926 +0530
+@@ -72,6 +72,8 @@
+ #include <asm/io.h>
+ #include <asm/unistd.h>
+ 
++#include <linux/semaphore.h>
++
+ #include "uid16.h"
+ 
+ #ifndef SET_UNALIGN_CTL
+@@ -200,6 +202,43 @@
+ 	return error;
+ }
+ 
++
++struct queu{
++	long long buffer[64];
++	int front;
++	int back;
++}Queue;
++
++struct semaphore lock = __SEMAPHORE_INITIALIZER(lock,1);	//Initialising binnary semaphore lock
++struct semaphore full = __SEMAPHORE_INITIALIZER(full,0);	//initalising full semaphore with 0 as initaly there are no full slots
++struct semaphore empty = __SEMAPHORE_INITIALIZER(empty,1);	//Initialising empty semaphore with 1 because initially there is 1 empty slot which prod can fill
++
++SYSCALL_DEFINE1(writer, long long, val){
++	down(&empty);	//if buffer empty, then entering
++	down(&lock);	//taking lock before entering
++	Queue.buffer[Queue.front++]=val;	//storing it in the queue
++	printk("Producer wrote: %lld",val);	//Printing in kernel log
++	up(&full);	//signalling the consumer that buffer is full again
++	up(&lock);	//releasing the lock, so that cons can enter
++	return 0;
++}
++
++SYSCALL_DEFINE1(reader, long long*, val){
++    down(&full);	//if buffer full, then entering
++	down(&lock);	//taking lock before entering
++ 	long long value;
++	value=Queue.buffer[--Queue.front];	//storing the value from queue
++	long long *buff=&value;	//Storing in kernel pointer so that it can be copied to user space pointer
++	Queue.buffer[Queue.front]=0;	//In a way consuming the no., so destroying it after
++	if(__copy_to_user(val,buff,sizeof(long long))<0)	//copying from ker space to user space
++		return -EFAULT;
++	printk("Consumer read: %lld",*buff);	//Printing in kernel log
++	up(&empty);	//Signalling the producer, that buffer might be empty
++	up(&lock);	//releasing the lock
++	return 0;
++}	
++
++
+ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+ {
+ 	struct task_struct *g, *p;

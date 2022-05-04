@@ -1,0 +1,70 @@
+diff -ruN ker3/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl build/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
+--- ker3/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl	2021-09-15 13:32:36.000000000 +0530
++++ build/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl	2021-12-14 14:15:41.413261409 +0530
+@@ -370,6 +370,7 @@
+ 446	common	landlock_restrict_self	sys_landlock_restrict_self
+ 447	common	memfd_secret		sys_memfd_secret
+ 
++449	common	cust_scheduler		sys_cust_scheduler
+ #
+ # Due to a historical design error, certain syscalls are numbered differently
+ # in x32 as compared to native x86_64.  These syscalls have numbers 512-547.
+diff -ruN ker3/linux-5.14.4/include/linux/sched.h build/linux-5.14.4/include/linux/sched.h
+--- ker3/linux-5.14.4/include/linux/sched.h	2021-09-15 13:32:36.000000000 +0530
++++ build/linux-5.14.4/include/linux/sched.h	2021-12-14 14:17:36.666592183 +0530
+@@ -473,7 +473,7 @@
+ 	u64				sum_exec_runtime;
+ 	u64				vruntime;
+ 	u64				prev_sum_exec_runtime;
+-
++	u64				manual_delay;
+ 	u64				nr_migrations;
+ 
+ 	struct sched_statistics		statistics;
+diff -ruN ker3/linux-5.14.4/kernel/sched/core.c build/linux-5.14.4/kernel/sched/core.c
+--- ker3/linux-5.14.4/kernel/sched/core.c	2021-09-15 13:32:36.000000000 +0530
++++ build/linux-5.14.4/kernel/sched/core.c	2021-12-14 14:52:03.186546543 +0530
+@@ -3956,6 +3956,7 @@
+ 	p->se.prev_sum_exec_runtime	= 0;
+ 	p->se.nr_migrations		= 0;
+ 	p->se.vruntime			= 0;
++	p->se.manual_delay		= 0;
+ 	INIT_LIST_HEAD(&p->se.group_node);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+@@ -7265,6 +7266,20 @@
+ }
+ EXPORT_SYMBOL_GPL(sched_setattr_nocheck);
+ 
++
++
++SYSCALL_DEFINE2(cust_scheduler, u64, del, pid_t, pid){
++	if(del<0)
++		return -EINVAL;
++	struct task_struct *required_task;	//First declaring then initialising as per linux warning
++	struct pid *required_pid;
++	required_pid=find_get_pid(pid);	//finding the Pid struct of the given process, to use to get task_struct
++	required_task= pid_task(required_pid,PIDTYPE_PID);	//getting the task_struct of the required process
++	del*=1000000; 	//Converting milli-sec to nano-secs for vruntime
++	required_task->se.manual_delay=del;	//Now adding the delay, so that it can be added to vruntime
++	return 0;
++}
++
+ /**
+  * sched_setscheduler_nocheck - change the scheduling policy and/or RT priority of a thread from kernelspace.
+  * @p: the task in question.
+diff -ruN ker3/linux-5.14.4/kernel/sched/fair.c build/linux-5.14.4/kernel/sched/fair.c
+--- ker3/linux-5.14.4/kernel/sched/fair.c	2021-09-15 13:32:36.000000000 +0530
++++ build/linux-5.14.4/kernel/sched/fair.c	2021-12-14 14:57:03.099873249 +0530
+@@ -811,7 +811,10 @@
+ 	curr->sum_exec_runtime += delta_exec;
+ 	schedstat_add(cfs_rq->exec_clock, delta_exec);
+ 
+-	curr->vruntime += calc_delta_fair(delta_exec, curr);
++	curr->vruntime += calc_delta_fair(delta_exec, curr);	
++	curr->vruntime += curr->manual_delay;	
++	/*Adding the new manual delay to the already calculated fair timing.
++	 * If it was not the reqd process, then addition will be 0 only.*/
+ 	update_min_vruntime(cfs_rq);
+ 
+ 	if (entity_is_task(curr)) {

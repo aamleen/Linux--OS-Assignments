@@ -1,0 +1,29 @@
+The program starts its execution from the A.c file which contains the main method. Then we call the function A() from main method.
+While compiling the whole program, we use the command "gcc -no-pie A.c B.o C.c -o Q2". Here B.o was generated using nasm from the B.asm file
+This command compiles the A.c and C.c and then links the files and then links all the three files to the executable file Q1. So now the Q1 will contain all A(), B(), C()
+Using extern command in the files, its made sure that the function that we are going to call in that particular file, is visible in the file, so that it can be called easily
+
+In function A:
+    We store an unsigned long(64 bits) in a variable. Then we make the function B() visible to the A function by using extern command, since the function B is not present in the file.
+    After that we call the B() using the value stored in the 64 bit variable earlier.
+    Using the address of global B defined in B.asm, the execution reaches to the B.asm file
+
+In function B:
+    We start by firstly making the C() function (that we will be returning to later), visible to the B() by extending its visibility to B, using extern
+    Then, we declare the text we are goint to use to display that we are in function B, in section .data. Then we reserve 8 bytes for the value being passed from A() in num variable
+    Then we start the execution of the B() by making B visible globally. 
+    In B: we first store the number passed by A() at memory pointed by num ([num]). The passed value was stored in rdi register.
+    Then we call the sub-routine _printLocation to call the write() systemcall and print the text we saved earlier, to show that we are currently in B().
+    Then we print the number in sub-routine _printNum. The number was stored in a reserved 8 byte variable, and therefor the 64 bit number was automatically casted in a 8-byte ASCII String, because as mentione in the tuts, by default ASCII is used.
+    So now, all the 8 bytes will be printed 1-by-1.
+
+    Now, we will manage the stack so that B() should return to C() and not A():
+    For this, we will sort-of create a new Stack in continuation with the earlier stack. We will push the stack-base pointer(rbp) to the stack and will make the stack top-pointer (rsp) point to the same.
+    Then we move the rsp to rbp, so now rbp and rsp, both point to the new top of the stack, and all the ways to access the previous stack(that contains return address to A) are lost.
+    Then using lea, we extract the memory address of C() and store it in a register rbx. We then push this value to the stack, so that when the ret takes the returning memory address, it gets that of C().
+    Then, we use ret to return from B(), but this takes us to C.
+
+In function C:
+    As the command passes from B() to C(), the function prints that the command is now in C(), and then exits the program using exit(0);
+
+As a way to check the flow of program, I have added a print statememnt in A after calling B, to check that if the command ever returns to A(), which it does not.

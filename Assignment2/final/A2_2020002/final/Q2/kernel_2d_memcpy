@@ -1,0 +1,37 @@
+diff -u -r ker2/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl ker1/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl
+--- ker2/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl	2021-09-15 13:32:36.000000000 +0530
++++ ker1/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl	2021-11-23 22:50:37.543362250 +0530
+@@ -369,6 +369,7 @@
+ 445	common	landlock_add_rule	sys_landlock_add_rule
+ 446	common	landlock_restrict_self	sys_landlock_restrict_self
+ 447	common	memfd_secret		sys_memfd_secret
++448	common	kernel_2d_memcpy	sys_kernel_2d_memcpy
+ 
+ #
+ # Due to a historical design error, certain syscalls are numbered differently
+diff -u -r ker2/linux-5.14.4/kernel/sys.c ker1/linux-5.14.4/kernel/sys.c
+--- ker2/linux-5.14.4/kernel/sys.c	2021-09-15 13:32:36.000000000 +0530
++++ ker1/linux-5.14.4/kernel/sys.c	2021-11-23 22:46:14.370023111 +0530
+@@ -200,6 +200,22 @@
+ 	return error;
+ }
+ 
++SYSCALL_DEFINE4(kernel_2d_memcpy,int, rows, int, col, float*, mat1, float*, mat2){
++	
++	float temp[col];
++	int i;
++	for(i=0;i<rows;i++){
++		long copied=__copy_from_user(temp,mat1+i*col,sizeof(float)*col);
++		if(copied<0)
++			return -EFAULT;
++		long COPIED=__copy_to_user(mat2+i*col,temp,sizeof(float)*col);
++		if(COPIED<0)
++			return -EFAULT;
++	}
++	printk(KERN_INFO "Copied from one matrix to another\n");
++	return 0;
++}
++
+ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+ {
+ 	struct task_struct *g, *p;

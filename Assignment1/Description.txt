@@ -1,0 +1,30 @@
+Q1.c (part 1):
+    We start by opening the file, and checking that if there was any error while opening the file. If yes, we exit after printing the error
+    If there was no error in opening the file, then we create a child process using fork(). We again check that if there was any error while creating the child process
+    If not, then we use if(pid==o), which means that the process is a child process. In the child process, we set the value of ch to 'A' implying that it will check for Section a
+    Then we pass the ch to a helper function.
+    In the helper function, we once again open the file and store its file descriptor. We then create a buffer of size 1024, with dynamic memory allocation. If the buffer was not created successfully, we print an error and return
+    If the buffer was created successfully, then we move in an infinite loop, which will read the bytes 1-by-1 from the file, using the file-descriptor. It will also check that if the file was being read properly, if not then it will print an error and return
+    If the file was being read properly, then the loop will read, till there is any byte left in the file.
+    Then we extract every row, as when we encounter a '\n' means a row has been moved to the buffer.
+    Then we split the buffer into columns 1-by-1, using strtok() and passing "," as a delimiiter. 
+    For each cell, we check the column no., if it is the 2nd column then it contains the section. We match the same with our desired section. If it does not matches then we set the buffer index back at 0, and start moving to the next row.
+    If it matches, then we iterate column wise, till the last column and add the assignment marks to the sum array of size 6 to store 6 assignments. Also, we add 1 to the no. of students in that section
+    Also, while running through the rows, we skip the 1st row, as it contains the labels and we do not need that.
+
+    Once we are done reading and calculating the sum, we exit the loop and then compute our average and print it along with the total sum in a separate loop.
+    Then we return back to the main method.
+
+    The same process is repeated for the parent process, with section=B.
+    After the child process ends, it moves through the lines where (pid>0) is not a condition. It encounters exit(0) and ends.
+    The parent process waits for the child process to end using waitpid, after calling the function and doing its work
+
+Q12.c (part 2Threads):
+    In the threads question, we perform almost the same operation, except that here we maintain a global array of size 7, to store the sum of all the assignments in every section and also the total students. Since, we are using threads and they use the same memory space, so this global variable will be visible later after joining the thread too. Then we can compute the average.
+
+    We start by checking if the file can be opened. If it can be, then we create a thread using pthread_create, and call the thread function, which will further call the helper function to perform all the same operations as done in Q1 helper function (with section A)
+    Only difference is that when it will have computed the sum of all the assignments in a section, it will add the same to the global array mentioned earlier.
+    We will then also compute the same for section B in another thread. Then we will join both the threads.
+    Then we will compute the overall avergae finally using that global array.
+
+In this assignment, our buffer will never run out , because after every row, we are sort-of clearing the row

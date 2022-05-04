@@ -1,0 +1,61 @@
+--- ker2/linux-5.14.4/kernel/sys.c	2021-09-15 13:32:36.000000000 +0530
++++ build/linux-5.14.4/kernel/sys.c	2022-01-04 22:37:57.936474796 +0530
+@@ -72,6 +72,8 @@
+ #include <asm/io.h>
+ #include <asm/unistd.h>
+ 
++#include <linux/semaphore.h>
++
+ #include "uid16.h"
+ 
+ #ifndef SET_UNALIGN_CTL
+@@ -200,6 +202,49 @@
+ 	return error;
+ }
+ 
++
++struct queu{
++	long long buffer[64];
++	int front;
++}Queue;
++
++
++
++struct semaphore lock = __SEMAPHORE_INITIALIZER(lock,1);
++struct semaphore full = __SEMAPHORE_INITIALIZER(full,0);
++struct semaphore empty = __SEMAPHORE_INITIALIZER(empty,2);
++
++SYSCALL_DEFINE1(writer, long long, val){
++	down(&empty);
++	down(&lock);
++	/*long long* buff=(long long*)kmalloc(2*sizeof(long long));
++        if(buff==NULL){
++		return -EFAULT;
++	if(__copy_from_user(buff,val,sizeof(long long))<0)
++		return -EFAULT;	*/
++	Queue.buffer[Queue.front++]=val;
++	printk("Producer wrote: %lld",val);
++	up(&full);
++	up(&lock);
++	return 0;
++}
++
++SYSCALL_DEFINE1(reader, long long, val){
++        down(&full);
++	down(&lock);
++ 	/*long long value=Queue.buffer[--Queue.front];
++	long long *buff=&value;
++	Queue.buffer[Queue.front]=0;
++	if(__copy_to_user(val,buff,sizeof(long long))<0)
++		return -EFAULT;*/
++	val=Queue.buffer[--Queue.front];
++	printk("Consumer read: %lld",val);
++	up(&empty);
++	up(&lock);
++	return 0;
++}	
++
++
+ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+ {
+ 	struct task_struct *g, *p;

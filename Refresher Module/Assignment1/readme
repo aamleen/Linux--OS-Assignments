@@ -1,0 +1,24 @@
+
+Q1:
+Compiling instructions: make Q1
+Executing Instructions: ./Q1 <path_to_source_file> <path_to_destination_file>
+
+Q2:
+Not done
+
+Q3:
+Compiling Instructions: make Q3
+Executing Instructions: ./Q3
+then follow the console and enter the input as asked.
+
+Q4:
+Compiling Instructions: make Q4
+Executing Instructions: ./Q4
+Then just enter a sentence you want to reverse (character limit is 150)
+
+Q5:
+Compiling Instructions: make Q5
+Executing Instructions: ./Q5
+Follow the instructions given on screen before giving the appropriate input.
+
+

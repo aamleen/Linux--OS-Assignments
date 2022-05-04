@@ -1,0 +1,12 @@
+--- ker2/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl	2021-09-15 13:32:36.000000000 +0530
++++ build/linux-5.14.4/arch/x86/entry/syscalls/syscall_64.tbl	2022-01-04 21:40:08.069995512 +0530
+@@ -369,7 +369,8 @@
+ 445	common	landlock_add_rule	sys_landlock_add_rule
+ 446	common	landlock_restrict_self	sys_landlock_restrict_self
+ 447	common	memfd_secret		sys_memfd_secret
+-
++448	common	writer			sys_writer
++449	common	reader			sys_reader
+ #
+ # Due to a historical design error, certain syscalls are numbered differently
+ # in x32 as compared to native x86_64.  These syscalls have numbers 512-547.

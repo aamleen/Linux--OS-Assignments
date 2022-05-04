@@ -1,0 +1,26 @@
+
+Q1:
+Executing Instructions: ./Q1.sh dd/mm/yyyy
+Give the date as given in the above format
+
+Q2:
+Executing instructions: ./Q2.sh <operation_name> operand1 operand2 ...
+Enter the operation name to be performed followed by the operands to perform on (space-separated).
+operation names are: add, sub, mul, div, exp
+
+Q3, part a:
+Compiling Instructions: make Q3a
+Executing Instructions: ./Q3a 
+Follow the instructions given on screen before giving the appropriate input. So follow the interactive console, and enter the choices accordingly.
+
+Q3, part b:
+Compiling Instructions: make Q3b
+Executing Instructions: ./Q3b 
+Follow the instructions given on screen before giving the appropriate input. So follow the interactive console, and enter the choices accordingly.
+
+Q5:
+Compiling Instructions: make Q5
+Executing Instructions: ./Q5
+Follow the instructions given on screen before giving the appropriate input. The array entered should contain integers, and there's an option to sort ascending or descending. By default, its assumed to be descending. So follow the interactive console
+
+

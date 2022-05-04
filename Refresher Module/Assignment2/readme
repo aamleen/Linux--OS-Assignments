@@ -1,0 +1,37 @@
+Q1, part a:
+Compiling instructions: make Q1a
+Executing instructions: ./Q1a
+No user input required, the desired matrix will be output
+
+Q1, part b:
+Compiling instructions: make Q1b
+Executing instructions: ./Q1b
+First, you need to enter the no. of rows, and then user controls the no. of columns in each rows, by proving input as directed on console.
+
+Q2, part a:
+Compiling instructions: make Q2a
+Executing instructions: ./Q2a
+Then follow the instructions as per the menu of instructions given on the interactive console. Enter those values only that are asked.
+
+Q2, part b:
+Compiling Instructions: make Q2b
+Executing Instructions: ./Q2b
+Then follow the instructions as per the menu of instructions given on the interactive console. Enter those values only that are asked.
+
+Q2, part c:
+Compiling Instructions: make Q2c
+Executing Instructions: ./Q2c
+Then follow the instructions as per the menu of instructions given on the interactive console. Enter those values only that are asked. You can opt to perform operations in a stack or queue
+
+Q3:
+Compiling Instructions: make Q3
+Executing Instructions: ./Q3 <opration_name> <operand1> <operand2>
+Its a command line argument, so just use the operation name as given in question, and then pass 2 arguments, space separated every value.
+eg- ./Q3 sub 5 7  Other operation names are: add, sub, mul, div, exp
+
+Q5:
+Compiling Instructions: make Q5
+Executing Instructions: ./Q5
+Follow the instructions given on screen before giving the appropriate input. The array entered should contain integers, and there's an option to sort ascending or descending. By default, its assumed to be descending. So follow the interactive console
+
+
